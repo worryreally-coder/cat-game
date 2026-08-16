@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>لعبة دمج القطط</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 360px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .stats-item span {
+            color: #ffd700;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 340px;
+            margin: 20px 0;
+        }
+        .slot {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, border-color 0.2s;
+        }
+        .slot:active {
+            transform: scale(0.95);
+        }
+        .slot.selected {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+        .slot-lvl {
+            position: absolute;
+            bottom: 4px;
+            font-size: 11px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: #fff;
+        }
+        .controls {
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 20px;
+        }
+        .btn-spawn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
+        }
+        .btn-spawn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stats-bar">
+        <div class="stats-item">🪙 النقود: <span id="coinCount">0</span></div>
+        <div class="stats-item">🐱 عدد القطط: <span id="catCount">0</span>/9</div>
+    </div>
+
+    <div>
+        <h3>اسحب وادمج القطط المتشابهة! 🐾</h3>
+    </div>
+
+    <div class="grid-container" id="grid"></div>
+
+    <div class="controls">
+        <button class="btn-spawn" onclick="spawnCat()">إضافة قطة جديدة 🐱 (+1)</button>
+    </div>
+
+    <script>
+        // إعداد اتصال تيليجرام
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+        }
+
+        // مراحل تطور القطط
+        const CAT_EVOLUTIONS = [
+            { level: 1, icon: "🐱", name: "قطة صغيرة" },
+            { level: 2, icon: "😺", name: "قطة مرحة" },
+            { level: 3, icon: "😸", name: "قطة مبتسمة" },
+            { level: 4, icon: "😻", name: "قطة قلوب" },
+            { level: 5, icon: "😽", name: "قطة لطيفة" },
+            { level: 6, icon: "🐈‍⬛", name: "قطة نادرة" },
+            { level: 7, icon: "🦁", name: "ملك القطط" },
+            { level: 8, icon: "👑", name: "القط الأسطوري" }
+        ];
+
+        let board = Array(9).fill(null); // شبكة 3x3
+        let coins = 0;
+        let selectedIndex = null;
+
+        function createGrid() {
+            const gridEl = document.getElementById("grid");
+            gridEl.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                const slot = document.createElement("div");
+                slot.className = "slot";
+                slot.id = "slot-" + i;
+                slot.onclick = () => handleSlotClick(i);
+                gridEl.appendChild(slot);
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            let activeCats = 0;
+            for (let i = 0; i < 9; i++) {
+                const slot = document.getElementById("slot-" + i);
+                slot.className = "slot" + (selectedIndex === i ? " selected" : "");
+                
+                if (board[i] !== null) {
+                    activeCats++;
+                    const catData = CAT_EVOLUTIONS[board[i] - 1];
+                    slot.innerHTML = `
+                        <div>${catData.icon}</div>
+                        <div class="slot-lvl">Lv.${catData.level}</div>
+                    `;
+                } else {
+                    slot.innerHTML = "";
+                }
+            }
+            document.getElementById("coinCount").innerText = coins;
+            document.getElementById("catCount").innerText = activeCats;
+        }
+
+        function spawnCat() {
+            const emptySlots = [];
+            board.forEach((val, idx) => {
+                if (val === null) emptySlots.push(idx);
+            });
+
+            if (emptySlots.length === 0) {
+                alert("المساحة ممتلئة! ادمج القطط لتوفير مساحة.");
+                return;
+            }
+
+            // اختيار مكان عشوائي فارغ
+            const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+            board[randomSlot] = 1; // قطة مستوى 1
+            updateUI();
+        }
+
+        function handleSlotClick(index) {
+            if (selectedIndex === null) {
+                // أول ضغطة لتحديد القطة
+                if (board[index] !== null) {
+                    selectedIndex = index;
+                }
+            } else {
+                // الضغطة الثانية (نقل أو دمج)
+                if (selectedIndex === index) {
+                    selectedIndex = null; // إلغاء التحديد
+                } else if (board[index] === null) {
+                    // نقل القطة لمكان فارغ
+                    board[index] = board[selectedIndex];
+                    board[selectedIndex] = null;
+                    selectedIndex = null;
+                } else if (board[index] === board[selectedIndex]) {
+                    // دمج قطتين من نفس المستوى!
+                    const currentLevel = board[index];
+                    if (currentLevel < CAT_EVOLUTIONS.length) {
+                        board[index] = currentLevel + 1;
+                        board[selectedIndex] = null;
+                        coins += currentLevel * 10; // مكافأة عملات
+                    }
+                    selectedIndex = null;
+                } else {
+                    // تبديل أماكن قطتين مختلفتين
+                    const temp = board[index];
+                    board[index] = board[selectedIndex];
+                    board[selectedIndex] = temp;
+                    selectedIndex = null;
+                }
+            }
+            updateUI();
+        }
+
+        // توليد نقود تلقائياً كل 3 ثوانٍ من القطط الموجودة
+        setInterval(() => {
+            let earnings = 0;
+            board.forEach(level => {
+                if (level !== null) {
+                    earnings += level;
+                }
+            });
+            if (earnings > 0) {
+                coins += earnings;
+                document.getElementById("coinCount").innerText = coins;
+            }
+        }, 3000);
+
+        createGrid();
+    </script>
+</body>
+</html>
