@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة دمج القطط - النسخة المطورة</title>
+    <title>لعبة دمج القطط - النسخة المتوازنة</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -44,7 +44,7 @@
         }
         .title-box h3 {
             margin: 5px 0;
-            font-size: 16px;
+            font-size: 15px;
             color: #00ff88;
         }
         .grid-container {
@@ -101,15 +101,15 @@
             border: none;
             width: 100%;
             padding: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 15px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
             margin-bottom: 6px;
         }
-        .btn-shop {
-            background: linear-gradient(45deg, #11998e, #38ef7d);
+        .btn-gift {
+            background: linear-gradient(45deg, #f7b733, #fc4a1a);
             color: white;
             border: none;
             width: 100%;
@@ -118,12 +118,24 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
+            margin-bottom: 6px;
         }
-        .btn-action:active, .btn-shop:active {
+        .btn-shop {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .btn-action:active, .btn-gift:active, .btn-shop:active {
             transform: scale(0.98);
         }
         .leaderboard {
-            font-size: 13px;
+            font-size: 12px;
             color: #b8b8b8;
             margin-top: 5px;
         }
@@ -137,11 +149,11 @@
 
     <div class="header">
         <div class="stats-bar">
-            <div class="stats-item">🪙 النقود: <span id="coinCount">50</span></div>
+            <div class="stats-item">🪙 النقود: <span id="coinCount">100</span></div>
             <div class="stats-item">🏆 أعلى مستوى: <span id="maxLevelAchieved">1</span></div>
         </div>
         <div class="title-box">
-            <h3 id="gameStatus">ادمج للوصول إلى القط الأسطوري 👑!</h3>
+            <h3 id="gameStatus">ادمج القطط واكسب النقود للوصول للقب الملكي!</h3>
         </div>
     </div>
 
@@ -149,7 +161,8 @@
 
     <div class="panel">
         <button class="btn-action" onclick="spawnCat()">إضافة قطة أساسية 🐱 (تكلفة: <span id="spawnCost">10</span> 🪙)</button>
-        <button class="btn-shop" onclick="buyRandomCatAbove()">🛒 شراء قطة متقدمة عشوائية (تكلفة: 100 🪙)</button>
+        <button class="btn-gift" onclick="getFreeCoins()">🎁 هدية مجانية (+60 نقود)</button>
+        <button class="btn-shop" onclick="buyRandomCatAbove()">🛒 شراء قطة عشوائية متقدمة (80 🪙)</button>
         <div class="leaderboard">
             👑 الترتيب التنافسي: المركز <span id="userRank">1</span> بين اللاعبين
         </div>
@@ -173,7 +186,7 @@
         ];
 
         let board = Array(9).fill(null);
-        let coins = 50; 
+        let coins = 100; // بدء النقود بـ 100 لراحة اللاعب
         let spawnCost = 10;
         let selectedIndex = null;
         let maxLevel = 1;
@@ -226,7 +239,7 @@
 
         function spawnCat() {
             if (coins < spawnCost) {
-                alert("❌ لا توجد نقود كافية! ادمج القطط لكسب المزيد.");
+                alert("❌ نفذت نقودك! استخدم زر 'هدية مجانية 🎁' للحصول على نقود جديدة والاستمرار.");
                 return;
             }
 
@@ -241,16 +254,23 @@
             }
 
             coins -= spawnCost;
-            spawnCost += 5;
+            // جعل الزيادة في السعر بطيئة ومدروسة لكي لا تنفد النقود بسرعة
+            spawnCost = Math.min(spawnCost + 2, 40);
 
             const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
             board[randomSlot] = 1;
             updateUI();
         }
 
+        function getFreeCoins() {
+            coins += 60; // مكافأة مجانية تمنح اللاعب نفساً جديداً للعب
+            alert("🎁 حصلت على 60 نقطة مجانية! استمر في الدمج.");
+            updateUI();
+        }
+
         function buyRandomCatAbove() {
-            if (coins < 100) {
-                alert("❌ تحتاج إلى 100 نقود لشراء قطة متقدمة!");
+            if (coins < 80) {
+                alert("❌ تحتاج إلى 80 نقود لشراء قطة متقدمة!");
                 return;
             }
 
@@ -264,7 +284,7 @@
                 return;
             }
 
-            coins -= 100;
+            coins -= 80;
             const randomLvl = Math.floor(Math.random() * 3) + 1;
             const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
             board[randomSlot] = randomLvl;
@@ -289,7 +309,8 @@
                         board[index] = currentLevel + 1;
                         board[selectedIndex] = null;
                         
-                        let reward = currentLevel * 25;
+                        // مكافأة دمج ضخمة لضمان بقاء اللاعب رابحاً
+                        let reward = currentLevel * 45;
                         coins += reward;
                         score += currentLevel * 50;
                         
