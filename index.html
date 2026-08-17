@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة دمج القطط - النسخة المتوازنة</title>
+    <title>لعبة دمج القطط - مع المؤثرات الصوتية</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -174,6 +174,45 @@
             window.Telegram.WebApp.expand();
         }
 
+        // نظام توليد الأصوات برمجياً بدون الحاجة لملفات خارجية
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playMergeSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
+
+        function playWinSound() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            let notes = [523.25, 659.25, 783.99, 1046.50]; // نغمة موسيقية متسلسلة للنصر
+            notes.forEach((freq, index) => {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.15);
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime + index * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.15 + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + index * 0.15);
+                osc.stop(audioCtx.currentTime + index * 0.15 + 0.3);
+            });
+        }
+
         const CAT_EVOLUTIONS = [
             { level: 1, icon: "🐱", name: "قطة صغيرة" },
             { level: 2, icon: "😺", name: "قطة مرحة" },
@@ -186,11 +225,12 @@
         ];
 
         let board = Array(9).fill(null);
-        let coins = 100; // بدء النقود بـ 100 لراحة اللاعب
+        let coins = 100;
         let spawnCost = 10;
         let selectedIndex = null;
         let maxLevel = 1;
         let score = 0;
+        let hasWon = false;
 
         function createGrid() {
             const gridEl = document.getElementById("grid");
@@ -234,6 +274,10 @@
 
             if (maxLevel >= CAT_EVOLUTIONS.length) {
                 document.getElementById("gameStatus").innerHTML = "🎉 مبروك! لقد فزت وأنهيت اللعبة بالقط الأسطوري!";
+                if (!hasWon) {
+                    hasWon = true;
+                    playWinSound(); // تشغيل صوت الفوز الاحتفالي لأول مرة عند الوصول للهدف
+                }
             }
         }
 
@@ -254,7 +298,6 @@
             }
 
             coins -= spawnCost;
-            // جعل الزيادة في السعر بطيئة ومدروسة لكي لا تنفد النقود بسرعة
             spawnCost = Math.min(spawnCost + 2, 40);
 
             const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
@@ -263,7 +306,7 @@
         }
 
         function getFreeCoins() {
-            coins += 60; // مكافأة مجانية تمنح اللاعب نفساً جديداً للعب
+            coins += 60;
             alert("🎁 حصلت على 60 نقطة مجانية! استمر في الدمج.");
             updateUI();
         }
@@ -309,7 +352,8 @@
                         board[index] = currentLevel + 1;
                         board[selectedIndex] = null;
                         
-                        // مكافأة دمج ضخمة لضمان بقاء اللاعب رابحاً
+                        playMergeSound(); // 🎵 تشغيل صوت الدمج الفوري عند دمج قطتين بنجاح!
+                        
                         let reward = currentLevel * 45;
                         coins += reward;
                         score += currentLevel * 50;
