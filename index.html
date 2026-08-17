@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة دمج القطط - مع المؤثرات الصوتية</title>
+    <title>لعبة دمج القطط - مع المتجر المتكامل</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -16,7 +16,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 10px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -31,40 +31,40 @@
             display: flex;
             justify-content: space-around;
             background: rgba(0, 0, 0, 0.4);
-            padding: 10px;
+            padding: 8px;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .stats-item span {
             color: #ffd700;
         }
         .title-box h3 {
-            margin: 5px 0;
-            font-size: 15px;
+            margin: 4px 0;
+            font-size: 14px;
             color: #00ff88;
         }
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            max-width: 340px;
-            margin: 10px 0;
+            max-width: 320px;
+            margin: 6px 0;
         }
         .slot {
             background: rgba(255, 255, 255, 0.08);
             border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
+            border-radius: 14px;
             aspect-ratio: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 35px;
+            font-size: 32px;
             cursor: pointer;
             position: relative;
             transition: transform 0.1s, border-color 0.2s, background 0.2s;
@@ -75,41 +75,34 @@
         .slot.selected {
             border-color: #00ff88;
             background: rgba(0, 255, 136, 0.25);
-            box-shadow: 0 0 15px rgba(0,255,136,0.5);
+            box-shadow: 0 0 12px rgba(0,255,136,0.5);
         }
         .slot-lvl {
             position: absolute;
-            bottom: 4px;
-            font-size: 10px;
+            bottom: 3px;
+            font-size: 9px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 2px 5px;
-            border-radius: 8px;
+            padding: 1px 4px;
+            border-radius: 6px;
             color: #fff;
         }
         .panel {
             width: 100%;
             max-width: 340px;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
+            background: rgba(0,0,0,0.35);
+            padding: 8px;
             border-radius: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             border: 1px solid rgba(255,255,255,0.1);
+        }
+        .shop-title {
+            font-size: 13px;
+            color: #ffcc00;
+            margin: 0 0 6px 0;
+            font-weight: bold;
         }
         .btn-action {
             background: linear-gradient(45deg, #ff416c, #ff4b2b);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255, 75, 43, 0.4);
-            margin-bottom: 6px;
-        }
-        .btn-gift {
-            background: linear-gradient(45deg, #f7b733, #fc4a1a);
             color: white;
             border: none;
             width: 100%;
@@ -118,26 +111,43 @@
             font-weight: bold;
             border-radius: 12px;
             cursor: pointer;
-            margin-bottom: 6px;
+            box-shadow: 0 4px 10px rgba(255, 75, 43, 0.4);
+            margin-bottom: 5px;
         }
-        .btn-shop {
+        .shop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .shop-item-btn {
             background: linear-gradient(45deg, #11998e, #38ef7d);
             color: white;
             border: none;
-            width: 100%;
-            padding: 10px;
-            font-size: 13px;
+            padding: 8px;
+            font-size: 12px;
             font-weight: bold;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
         }
-        .btn-action:active, .btn-gift:active, .btn-shop:active {
+        .btn-gift {
+            background: linear-gradient(45deg, #f7b733, #fc4a1a);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn-action:active, .shop-item-btn:active, .btn-gift:active {
             transform: scale(0.98);
         }
         .leaderboard {
-            font-size: 12px;
+            font-size: 11px;
             color: #b8b8b8;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         .leaderboard span {
             color: #ffcc00;
@@ -149,20 +159,28 @@
 
     <div class="header">
         <div class="stats-bar">
-            <div class="stats-item">🪙 النقود: <span id="coinCount">100</span></div>
+            <div class="stats-item">🪙 النقود: <span id="coinCount">120</span></div>
             <div class="stats-item">🏆 أعلى مستوى: <span id="maxLevelAchieved">1</span></div>
         </div>
         <div class="title-box">
-            <h3 id="gameStatus">ادمج القطط واكسب النقود للوصول للقب الملكي!</h3>
+            <h3 id="gameStatus">تسوق وادمج القطط للوصول للقب الملكي!</h3>
         </div>
     </div>
 
     <div class="grid-container" id="grid"></div>
 
     <div class="panel">
-        <button class="btn-action" onclick="spawnCat()">إضافة قطة أساسية 🐱 (تكلفة: <span id="spawnCost">10</span> 🪙)</button>
-        <button class="btn-gift" onclick="getFreeCoins()">🎁 هدية مجانية (+60 نقود)</button>
-        <button class="btn-shop" onclick="buyRandomCatAbove()">🛒 شراء قطة عشوائية متقدمة (80 🪙)</button>
+        <button class="btn-action" onclick="spawnCat()">إنتاج قطة أساسية 🐱 (تكلفة: <span id="spawnCost">10</span> 🪙)</button>
+        
+        <div class="shop-title">🛒 متجر القطط والترقيات:</div>
+        <div class="shop-grid">
+            <button class="shop-item-btn" onclick="buyCatLevel(1)">شراء 🐱 (Lv.1)<br>بـ 30 🪙</button>
+            <button class="shop-item-btn" onclick="buyCatLevel(2)">شراء 😺 (Lv.2)<br>بـ 70 🪙</button>
+            <button class="shop-item-btn" onclick="buyCatLevel(3)">شراء 😸 (Lv.3)<br>بـ 150 🪙</button>
+            <button class="shop-item-btn" onclick="buyCatLevel(4)">شراء 😻 (Lv.4)<br>بـ 300 🪙</button>
+        </div>
+        
+        <button class="btn-gift" onclick="getFreeCoins()">🎁 صندوق الهدية اليومية (+70 نقود)</button>
         <div class="leaderboard">
             👑 الترتيب التنافسي: المركز <span id="userRank">1</span> بين اللاعبين
         </div>
@@ -174,43 +192,46 @@
             window.Telegram.WebApp.expand();
         }
 
-        // نظام توليد الأصوات برمجياً بدون الحاجة لملفات خارجية
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function playMergeSound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            if (type === 'merge') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            } else if (type === 'buy') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            } else if (type === 'win') {
+                let notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, index) => {
+                    let o = audioCtx.createOscillator();
+                    let g = audioCtx.createGain();
+                    o.type = 'triangle';
+                    o.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.15);
+                    g.gain.setValueAtTime(0.4, audioCtx.currentTime + index * 0.15);
+                    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.15 + 0.3);
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.start(audioCtx.currentTime + index * 0.15);
+                    o.stop(audioCtx.currentTime + index * 0.15 + 0.3);
+                });
+                return;
+            }
+            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.15);
-        }
-
-        function playWinSound() {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            let notes = [523.25, 659.25, 783.99, 1046.50]; // نغمة موسيقية متسلسلة للنصر
-            notes.forEach((freq, index) => {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.15);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime + index * 0.15);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.15 + 0.3);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + index * 0.15);
-                osc.stop(audioCtx.currentTime + index * 0.15 + 0.3);
-            });
         }
 
         const CAT_EVOLUTIONS = [
@@ -225,7 +246,7 @@
         ];
 
         let board = Array(9).fill(null);
-        let coins = 100;
+        let coins = 120;
         let spawnCost = 10;
         let selectedIndex = null;
         let maxLevel = 1;
@@ -276,103 +297,11 @@
                 document.getElementById("gameStatus").innerHTML = "🎉 مبروك! لقد فزت وأنهيت اللعبة بالقط الأسطوري!";
                 if (!hasWon) {
                     hasWon = true;
-                    playWinSound(); // تشغيل صوت الفوز الاحتفالي لأول مرة عند الوصول للهدف
+                    playSound('win');
                 }
             }
         }
 
         function spawnCat() {
             if (coins < spawnCost) {
-                alert("❌ نفذت نقودك! استخدم زر 'هدية مجانية 🎁' للحصول على نقود جديدة والاستمرار.");
-                return;
-            }
-
-            const emptySlots = [];
-            board.forEach((val, idx) => {
-                if (val === null) emptySlots.push(idx);
-            });
-
-            if (emptySlots.length === 0) {
-                alert("⚠️ المساحة ممتلئة! ادمج القطط لتوفير مساحة.");
-                return;
-            }
-
-            coins -= spawnCost;
-            spawnCost = Math.min(spawnCost + 2, 40);
-
-            const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
-            board[randomSlot] = 1;
-            updateUI();
-        }
-
-        function getFreeCoins() {
-            coins += 60;
-            alert("🎁 حصلت على 60 نقطة مجانية! استمر في الدمج.");
-            updateUI();
-        }
-
-        function buyRandomCatAbove() {
-            if (coins < 80) {
-                alert("❌ تحتاج إلى 80 نقود لشراء قطة متقدمة!");
-                return;
-            }
-
-            const emptySlots = [];
-            board.forEach((val, idx) => {
-                if (val === null) emptySlots.push(idx);
-            });
-
-            if (emptySlots.length === 0) {
-                alert("⚠️ المساحة ممتلئة!");
-                return;
-            }
-
-            coins -= 80;
-            const randomLvl = Math.floor(Math.random() * 3) + 1;
-            const randomSlot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
-            board[randomSlot] = randomLvl;
-            updateUI();
-        }
-
-        function handleSlotClick(index) {
-            if (selectedIndex === null) {
-                if (board[index] !== null) {
-                    selectedIndex = index;
-                }
-            } else {
-                if (selectedIndex === index) {
-                    selectedIndex = null;
-                } else if (board[index] === null) {
-                    board[index] = board[selectedIndex];
-                    board[selectedIndex] = null;
-                    selectedIndex = null;
-                } else if (board[index] === board[selectedIndex]) {
-                    const currentLevel = board[index];
-                    if (currentLevel < CAT_EVOLUTIONS.length) {
-                        board[index] = currentLevel + 1;
-                        board[selectedIndex] = null;
-                        
-                        playMergeSound(); // 🎵 تشغيل صوت الدمج الفوري عند دمج قطتين بنجاح!
-                        
-                        let reward = currentLevel * 45;
-                        coins += reward;
-                        score += currentLevel * 50;
-                        
-                        let rank = Math.max(1, 100 - Math.floor(score / 200));
-                        document.getElementById("userRank").innerText = rank;
-                    }
-                    selectedIndex = null;
-                } else {
-                    const temp = board[index];
-                    board[index] = board[selectedIndex];
-                    board[selectedIndex] = temp;
-                    selectedIndex = null;
-                }
-            }
-            updateUI();
-        }
-
-        createGrid();
-    </script>
-</body>
-</html>
+                alert
